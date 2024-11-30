@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Exports\BooksExport;
+use App\Imports\BooksImport;
 use App\Models\Book;
 use App\Models\Bookshelf;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
+
 
 class BookController extends Controller
 {
@@ -109,5 +111,14 @@ class BookController extends Controller
     }
     public function export(){
         return Excel::download(new BooksExport, 'BooksData.xlsx');
+    }
+    public function import(Request $request){
+        $request->validate(["file" => "required|mimes:xlsx,xls"]);
+        Excel::import(new BooksImport, $request->file("file"));
+        $notification = array( 
+            'message' => 'Data buku berhasil dihapus', 
+            'alert-type' => 'success' 
+        );
+        return redirect()->route('book')->with($notification);
     }
 }
